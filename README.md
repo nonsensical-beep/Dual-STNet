@@ -2,7 +2,7 @@
 
 ## Overview
 
-Dual-STNet is a deep-learning-based seismic elastic inversion project. Its goal is to simultaneously invert three elastic properties of the subsurface medium from pre-stack seismic data:
+Dual-STNet is a deep-learning-based seismic inversion project. Its goal is to simultaneously invert three elastic properties of the subsurface medium from pre-stack seismic data:
 
 - P-wave velocity (Vp)
 - S-wave velocity (Vs)

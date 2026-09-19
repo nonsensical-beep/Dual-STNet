@@ -13,17 +13,6 @@ The project uses a semi-supervised learning framework composed of two main parts
 - **Inverse model**: predicts the elastic properties (Vp, Vs, Density) from seismic data.
 - **Forward model**: reconstructs the seismic response from the predicted elastic properties, used for self-supervised training.
 
-## Model Architecture
-
-The inverse model is a dual-stream network. Its main components (as found in the source code) include:
-
-- **MSCNN2D** for multi-scale feature extraction from the input.
-- A **hierarchical ViT-CA** encoder with **Multi-Head Self-Attention** and **Coordinate Attention** in each block.
-- A **ModernTCN2D Encoder/Decoder** with multi-scale large-kernel convolutions.
-- Three separate decoder heads that predict **Vp**, **Vs**, and **Density**.
-
-The forward model is a lightweight 1D convolutional network that maps the three predicted properties back to seismic data for the reconstruction loss.
-
 ## Repository Structure
 
 ```text
@@ -48,8 +37,6 @@ Dual-STNet/
 
 ## Requirements
 
-The following dependencies are visible from the `import` statements in the source code:
-
 - Python 3
 - PyTorch
 - NumPy
@@ -57,14 +44,6 @@ The following dependencies are visible from the `import` statements in the sourc
 - Matplotlib
 - scikit-image
 - tqdm
-
-Notes:
-
-- This repository does not provide any dependency version information.
-- There is no `requirements.txt`, `environment.yml`, or other dependency manifest.
-- The code makes extensive direct use of `.cuda()`, so the current implementation requires a CUDA-capable GPU.
-- There is no CPU fallback in the current code.
-
 Please install the dependencies listed above manually; no unified installation command is provided by the repository.
 
 ## Data
@@ -79,8 +58,6 @@ SEAM/data/
 The project uses NumPy `.npy` files to store seismic data and elastic property data.
 
 ## Usage
-
-The code uses relative paths such as `./data/...` and `./checkpoints/...`, so the program must be run from inside the corresponding dataset directory.
 
 ### Marmousi2
 
@@ -112,10 +89,6 @@ The following arguments are defined in both `train_main.py` files:
 - `-session_name` (default: a timestamp): name used when saving the model.
 
 ## Testing / Evaluation
-
-### Automated tests
-
-The current project does not provide an automated test suite. There is no `tests/` directory, no `test_*.py` or `*_test.py` files, and no pytest/unittest configuration.
 
 ### Model evaluation
 
@@ -152,9 +125,3 @@ Note:
 - Using `-test_checkpoint` requires an existing trained checkpoint.
 - The repository does not include a `checkpoints/` directory or any pretrained models.
 - You must first train a model, or provide your own checkpoint, before running the evaluation.
-
-## Notes
-
-- Dependency version information is not provided.
-- The current implementation depends on CUDA/GPU and has no CPU fallback.
-- No pretrained checkpoints are provided.

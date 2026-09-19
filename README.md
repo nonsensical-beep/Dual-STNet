@@ -44,6 +44,7 @@ Dual-STNet/
 - Matplotlib
 - scikit-image
 - tqdm
+
 Please install the dependencies listed above manually; no unified installation command is provided by the repository.
 
 ## Data

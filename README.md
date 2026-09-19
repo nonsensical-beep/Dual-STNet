@@ -8,7 +8,7 @@ Dual-STNet is a deep-learning-based seismic elastic inversion project. Its goal 
 - S-wave velocity (Vs)
 - Density
 
-The project uses a physics-constrained, semi-supervised learning framework composed of two main parts:
+The project uses a semi-supervised learning framework composed of two main parts:
 
 - **Inverse model**: predicts the elastic properties (Vp, Vs, Density) from seismic data.
 - **Forward model**: reconstructs the seismic response from the predicted elastic properties, used for physics-constrained / self-supervised training.

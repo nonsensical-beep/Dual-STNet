@@ -45,8 +45,6 @@ Dual-STNet/
 ```
 
 - `Marmousi2/` and `SEAM/` correspond to experiments on two different datasets.
-- The overall training logic and model structure are essentially the same in both directories.
-- The data and some hyperparameters differ between the two directories.
 
 ## Requirements
 

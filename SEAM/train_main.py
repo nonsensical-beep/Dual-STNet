@@ -24,14 +24,12 @@ kernel_size = 399
 
 
 def get_data(args, test=False):
-    # seam模型
     seismic_data = np.load('./data/SEAM_seismic_3.npy')  # (1751,3,1501)
 
     vp_data = np.load('./data/SEAM_Vp_Elastic_N23900.npy')  # (1751,1501)
     vs_data = np.load('./data/SEAM_Vs_Elastic_N23900.npy')  # (1751,1501)
     den_data = np.load('./data/SEAM_Den_Elastic_N23900.npy')  # (1751,1501)
 
-    # 初始模型
     # VS
     init_vs = cv2.GaussianBlur(vs_data, (kernel_size, kernel_size), 0)  # (1751,1501)
     init_vs = init_vs[:, np.newaxis]  # (1751,1,1501)ndarry
@@ -56,7 +54,6 @@ def get_data(args, test=False):
     init_vp_normalization = Normalization(mean_val=init_vp_mean, std_val=init_vp_std)
     init_vp = init_vp_normalization.normalize(init_vp)  # (1751,1,1501)tensor
 
-    # 密度
     init_den = cv2.GaussianBlur(den_data, (kernel_size, kernel_size), 0)
     init_den = init_den[:, np.newaxis]  # (1751,1,1501)ndarry
     init_den_mean = torch.tensor(np.mean(init_den, keepdims=True)).float()
@@ -70,7 +67,6 @@ def get_data(args, test=False):
 
     init_data = torch.cat([init_vs, init_vp, init_den], dim=1)  # (1751,3,1501)tensor
 
-    # 处理地震数据
     seismic_mean = torch.tensor(np.mean(seismic_data, keepdims=True)).float()
     seismic_std = torch.tensor(np.std(seismic_data, keepdims=True)).float()
     seismic_data = torch.tensor(seismic_data).float()
@@ -80,7 +76,7 @@ def get_data(args, test=False):
     seismic_normalization = Normalization(mean_val=seismic_mean, std_val=seismic_std)
     seismic_data = seismic_normalization.normalize(seismic_data)
 
-    # 处理vs
+    # vs
     data_vs = vs_data[:, np.newaxis]  # (1751,1,1501)
     vs_mean = torch.tensor(np.mean(data_vs, keepdims=True)).float()
     vs_std = torch.tensor(np.std(data_vs, keepdims=True)).float()
@@ -91,7 +87,7 @@ def get_data(args, test=False):
     vs_normalization = Normalization(mean_val=vs_mean, std_val=vs_std)
     data_vs = vs_normalization.normalize(data_vs)
 
-    # 处理vp
+    # vp
     data_vp = vp_data[:, np.newaxis]  # (1751,1,1501)
     vp_mean = torch.tensor(np.mean(data_vp, keepdims=True)).float()
     vp_std = torch.tensor(np.std(data_vp, keepdims=True)).float()
@@ -102,7 +98,7 @@ def get_data(args, test=False):
     vp_normalization = Normalization(mean_val=vp_mean, std_val=vp_std)
     data_vp = vp_normalization.normalize(data_vp)
 
-    # 处理den
+    # den
     data_den = den_data[:, np.newaxis]  # (1751,1,1501)
     den_mean = torch.tensor(np.mean(data_den, keepdims=True)).float()
     den_std = torch.tensor(np.std(data_den, keepdims=True)).float()
@@ -198,11 +194,11 @@ def train(args):
             optimizer.zero_grad()
             vs, vp, den = y[:, 0, :], y[:, 1, :], y[:, 2, :]
             vs, vp, den = vs.unsqueeze(1), vp.unsqueeze(1), den.unsqueeze(1)
-            z_expand = z[:, :, 0:args.width]  # 二维反演
+            z_expand = z[:, :, 0:args.width]
             z_expand = z_expand.permute(0, 1, 3, 2)
-            x_expand = x[:, :, 0:args.width]  # 二维反演
+            x_expand = x[:, :, 0:args.width]
             x_expand = x_expand.permute(0, 1, 3, 2)
-            x = x[:, :, args.width]  # x 用于正演
+            x = x[:, :, args.width]
             vs_pred, vp_pred, den_pred = inverse_net(x_expand, z_expand)
             x_rec = forward_net(y)
 
@@ -222,10 +218,10 @@ def train(args):
                 z_u_expand = z_u_expand.permute(0, 1, 3, 2)
                 x_u_expand = x_u[:, :, 0:args.width]
                 x_u_expand = x_u_expand.permute(0, 1, 3, 2)
-                x_u = x_u[:, :, args.width]  # 得到x_u
+                x_u = x_u[:, :, args.width]
                 vs_u_pred, vp_u_pred, den_u_pred = inverse_net(x_u_expand, z_u_expand)
                 y_u_pred = torch.cat([vs_u_pred, vp_u_pred, den_u_pred], dim=1)
-                x_u_rec = forward_net(y_u_pred)  # 得到x_u_rec
+                x_u_rec = forward_net(y_u_pred)
 
                 seismic_loss = criterion(x_u_rec, x_u)
             else:
@@ -309,13 +305,13 @@ def test(args):
         print('r2 (vp, vs, den):\n', property_r2_reordered)
         print('loss:\n', loss)
 
-        predicted = torch.cat(predicted, dim=0)  # 得到预测值
-        true_data = torch.cat(true_data, dim=0)  # 得到真实值
+        predicted = torch.cat(predicted, dim=0)
+        true_data = torch.cat(true_data, dim=0)
 
         predicted = torch.chunk(predicted, 3, dim=1)
-        predicted_vs = predicted[0]  # 得到预测的vs:[1751,1,1501]
-        predicted_vp = predicted[1]  # 得到预测的vp:[1751,1,1501]
-        predicted_den = predicted[2]  # 得到预测的den:[1751,1,1501]
+        predicted_vs = predicted[0]
+        predicted_vp = predicted[1]
+        predicted_den = predicted[2]
 
         true_data = torch.chunk(true_data, 3, dim=1)
         true_vs = true_data[0]  # [1751,1,1501]
@@ -335,7 +331,6 @@ def test(args):
         print('den的MSE: {:0.4f}'.format(np.sum((predicted_denn - true_denn).ravel() ** 2) / predicted_denn.size))
         # =========================================================================
 
-        # 解除归一化
         predicted_vs = vs_normalization.unnormalize(predicted_vs)
         true_vs = vs_normalization.unnormalize(true_vs)
         predicted_vp = vp_normalization.unnormalize(predicted_vp)
@@ -343,7 +338,6 @@ def test(args):
         predicted_den = den_normalization.unnormalize(predicted_den)
         true_den = den_normalization.unnormalize(true_den)
 
-        # 加载到CPU上 并转化成numpy
         predicted_vs = predicted_vs.cpu()
         true_vs = true_vs.cpu()
         predicted_vs = predicted_vs.numpy()
@@ -386,9 +380,6 @@ def test(args):
 
         fig, axs = plt.subplots(1, 3, figsize=(24, 8))
 
-        ##########################
-        # 1. 真实 vp
-        ##########################
         im1 = axs[0].imshow(true_vp[:, 0].T, vmin=true_vp.min(), vmax=true_vp.max(), cmap="viridis")
         axs[0].set_aspect(0.59)
         axs[0].set_title("True Vp", fontsize=16)
@@ -398,9 +389,6 @@ def test(args):
         cb1.ax.tick_params(labelsize=12)
         cb1.set_label("P-velocity (m/s)", fontsize=14)
 
-        ##########################
-        # 2. 预测 vp
-        ##########################
         im2 = axs[1].imshow(predicted_vp[:, 0].T, vmin=true_vp.min(), vmax=true_vp.max(), cmap="viridis")
         axs[1].set_aspect(0.59)
         axs[1].set_title("Predicted Vp", fontsize=16)
@@ -410,9 +398,6 @@ def test(args):
         cb2.ax.tick_params(labelsize=12)
         cb2.set_label("P-velocity (m/s)", fontsize=14)
 
-        ##########################
-        # 3. 误差图（Absolute Error）
-        ##########################
         im3 = axs[2].imshow(error_map, vmin=0, vmax=2000, cmap="hot_r")
         axs[2].set_aspect(0.59)
         axs[2].set_title("Absolute Error", fontsize=16)
@@ -443,9 +428,6 @@ def test(args):
 
         fig, axs = plt.subplots(1, 3, figsize=(24, 8))
 
-        ##########################
-        # 1. 真实 vs
-        ##########################
         im1 = axs[0].imshow(true_vs[:, 0].T, vmin=true_vs.min(), vmax=true_vs.max(), cmap="viridis")
         axs[0].set_aspect(0.59)
         axs[0].set_title("True Vs", fontsize=16)
@@ -455,9 +437,6 @@ def test(args):
         cb1.ax.tick_params(labelsize=12)
         cb1.set_label("S-velocity (m/s)", fontsize=14)
 
-        ##########################
-        # 2. 预测 vs
-        ##########################
         im2 = axs[1].imshow(predicted_vs[:, 0].T, vmin=true_vs.min(), vmax=true_vs.max(), cmap="viridis")
         axs[1].set_aspect(0.59)
         axs[1].set_title("Predicted Vs", fontsize=16)
@@ -467,10 +446,7 @@ def test(args):
         cb2.ax.tick_params(labelsize=12)
         cb2.set_label("S-velocity (m/s)", fontsize=14)
 
-        ##########################
-        # 3. 误差图（Absolute Error）
-        ##########################
-        im3 = axs[2].imshow(error_map, vmin=0, vmax=2000, cmap="hot_r")  # 白底色更清晰，可换 viridis
+        im3 = axs[2].imshow(error_map, vmin=0, vmax=2000, cmap="hot_r")
         axs[2].set_aspect(0.59)
         axs[2].set_title("Absolute Error", fontsize=16)
         axs[2].set_xlabel("CDP", fontsize=14)
@@ -500,9 +476,6 @@ def test(args):
 
         fig, axs = plt.subplots(1, 3, figsize=(24, 8))
 
-        ##########################
-        # 1. 真实密度
-        ##########################
         im1 = axs[0].imshow(true_den[:, 0].T, vmin=true_den.min(), vmax=true_den.max(), cmap="viridis")
         axs[0].set_aspect(0.59)
         axs[0].set_title("True Density", fontsize=16)
@@ -512,9 +485,6 @@ def test(args):
         cb1.ax.tick_params(labelsize=12)
         cb1.set_label("Density (g/cm³)", fontsize=14)
 
-        ##########################
-        # 2. 预测密度
-        ##########################
         im2 = axs[1].imshow(predicted_den[:, 0].T, vmin=true_den.min(), vmax=true_den.max(), cmap="viridis")
         axs[1].set_aspect(0.59)
         axs[1].set_title("Predicted Density", fontsize=16)
@@ -524,9 +494,6 @@ def test(args):
         cb2.ax.tick_params(labelsize=12)
         cb2.set_label("Density (g/cm³)", fontsize=14)
 
-        ##########################
-        # 3. 误差图（Absolute Error）
-        ##########################
         im3 = axs[2].imshow(error_map, vmin=0, vmax=1.0, cmap="hot_r")
         axs[2].set_aspect(0.59)
         axs[2].set_title("Absolute Error", fontsize=16)
@@ -541,7 +508,6 @@ def test(args):
 
 
 if __name__ == '__main__':
-    # arguments and parameters代码中所有的在arg中的参数都在这里设置
     parser = argparse.ArgumentParser()
     parser.add_argument('-width', type=int, default=3,
                         help="Number of seismic traces in expanding data to be used for training. It must be odd奇数")

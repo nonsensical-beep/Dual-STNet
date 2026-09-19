@@ -18,8 +18,8 @@ The project uses a physics-constrained, semi-supervised learning framework compo
 The inverse model is a dual-stream network. Its main components (as found in the source code) include:
 
 - **MSCNN2D** for multi-scale feature extraction from the input.
-- A **hierarchical ViT** encoder with **Multi-Head Self-Attention** and **Coordinate Attention** in each block.
-- A **ModernTCN2D Encoder/Decoder** with multi-scale large-kernel convolutions (U-Net style).
+- A **hierarchical ViT-CA** encoder with **Multi-Head Self-Attention** and **Coordinate Attention** in each block.
+- A **ModernTCN2D Encoder/Decoder** with multi-scale large-kernel convolutions.
 - Three separate decoder heads that predict **Vp**, **Vs**, and **Density**.
 
 The forward model is a lightweight 1D convolutional network that maps the three predicted properties back to seismic data for the reconstruction loss.

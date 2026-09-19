@@ -59,22 +59,21 @@ class CoordAtt(nn.Module):
         identity = x
 
         B, C, H, W = x.size()
-        x_h = self.pool_h(x)  # 压缩水平方向: (B, C, H, W) --> (B, C, H, 1)
-        x_w = self.pool_w(x).permute(0, 1, 3, 2)  # 压缩垂直方向: (B, C, H, W) --> (B, C, 1, W) --> (B,C,W,1)
+        x_h = self.pool_h(x)
+        x_w = self.pool_w(x).permute(0, 1, 3, 2)
 
-        # 坐标注意力生成
-        y = torch.cat([x_h, x_w], dim=2)  # 拼接水平和垂直方向的向量: (B,C,H+W,1)
-        y = self.conv1(y)  # 通过Conv进行变换,并降维: (B,C,H+W,1)--> (B,d,H+W,1)
-        y = self.bn1(y)  # BatchNorm操作: (B,d,H+W,1)
-        y = self.relu(y)  # Relu操作: (B,d,H+W,1)
+        y = torch.cat([x_h, x_w], dim=2)
+        y = self.conv1(y)
+        y = self.bn1(y)
+        y = self.relu(y)
 
-        x_h, x_w = torch.split(y, [H, W], dim=2)  # 沿着空间方向重新分割为两部分: (B,d,H+W,1)--> x_h:(B,d,H,1); x_w:(B,d,W,1)
-        x_w = x_w.permute(0, 1, 3, 2)  # x_w: (B,d,W,1)--> (B,d,1,W)
+        x_h, x_w = torch.split(y, [H, W], dim=2)
+        x_w = x_w.permute(0, 1, 3, 2)
 
-        a_h = self.conv_h(x_h).sigmoid()  # 恢复与输入相同的通道数,并生成垂直方向的权重: (B,d,H,1)-->(B,C,H,1)
-        a_w = self.conv_w(x_w).sigmoid()  # 恢复与输入相同的通道数,并生成水平方向的权重: (B,d,1,W)-->(B,C,1,W)
+        a_h = self.conv_h(x_h).sigmoid()
+        a_w = self.conv_w(x_w).sigmoid()
 
-        out = identity * a_w * a_h  # 将垂直、水平方向权重应用于输入,从而反映感兴趣的对象是否存在于相应的行和列中: (B,C,H,W) * (B,C,1,W) * (B,C,H,1) = (B,C,H,W)
+        out = identity * a_w * a_h
 
         return out
 
@@ -85,7 +84,6 @@ class MSCNN2D(nn.Module):
 
         self.gelu = nn.GELU()
 
-        # 多尺度卷积分支
         self.cnn1 = nn.Sequential(
             nn.Conv2d(in_channels=in_channels, out_channels=out_channels, kernel_size=5, padding=1 * (5 - 1) // 2,
                       dilation=1),
@@ -105,7 +103,6 @@ class MSCNN2D(nn.Module):
             self.gelu
         )
 
-        # 融合卷积
         self.cnn = nn.Sequential(
             nn.Conv2d(in_channels=36, out_channels=32, kernel_size=5, padding=2),
             nn.GroupNorm(1, 32),
@@ -120,10 +117,8 @@ class MSCNN2D(nn.Module):
             self.gelu,
         )
 
-        # 输出层 (逐点映射 16→16)
         self.out = nn.Conv2d(in_channels=32, out_channels=32, kernel_size=1)
 
-        # 权重初始化
         self._initialize_weights()
 
     def forward(self, x):  # x: [B, 3, H, W]
@@ -141,11 +136,11 @@ class MSCNN2D(nn.Module):
     def _initialize_weights(self):
         for m in self.modules():
             if isinstance(m, nn.Conv2d):
-                nn.init.kaiming_normal_(m.weight, mode='fan_out', nonlinearity='relu')  # Kaiming 初始化
+                nn.init.kaiming_normal_(m.weight, mode='fan_out', nonlinearity='relu')
                 if m.bias is not None:
                     nn.init.constant_(m.bias, 0)
             elif isinstance(m, nn.Linear):
-                nn.init.xavier_normal_(m.weight)  # Linear 层用 Xavier
+                nn.init.xavier_normal_(m.weight)
                 if m.bias is not None:
                     nn.init.constant_(m.bias, 0)
             elif isinstance(m, nn.GroupNorm):
@@ -274,10 +269,6 @@ class DualBranchViTBlock(nn.Module):
         self.mlp = MLP(dim, mlp_ratio=mlp_ratio, drop=drop)
 
     def forward(self, x, H, W):
-        """
-        x: (B, N, C)  <-- ViT 的标准输入格式 (Flattened patches)
-        H, W: 当前特征图的高度和宽度 (用于 CA 重塑)
-        """
         B, N, C = x.shape
 
         x_norm = self.norm1(x)
@@ -478,8 +469,8 @@ class ModernTCN2DEncoder(nn.Module):
                                     stride=(2, 1), padding=(1, 0))
 
     def forward(self, x):
-        shapes = []  # 记录尺寸
-        skips = []  # 用于跳跃连接
+        shapes = []
+        skips = []
 
         shapes.append(x.shape[2:])
         skips.append(x)
@@ -622,7 +613,6 @@ class forward_model(nn.Module):
         return x
 
 
-# ===== 测试 =====
 if __name__ == "__main__":
     dummy_input = torch.randn(8, 3, 1501, 3)  # B=2, C=3, H=128, W=64
     ini_input = torch.randn(8, 3, 1501, 3)

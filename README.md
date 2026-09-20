@@ -1,4 +1,4 @@
-# Dual-STNet
+# Dual-STNet: A Dual-Branch Spatio-Temporal Network with Explicit Feature Decoupling for Pre-stack AVA Inversion
 
 ## Overview
 
@@ -45,8 +45,6 @@ Dual-STNet/
 - scikit-image
 - tqdm
 
-Please install the dependencies listed above manually; no unified installation command is provided by the repository.
-
 ## Data
 
 The data files are located in:
@@ -76,19 +74,6 @@ cd SEAM
 python train_main.py
 ```
 
-### Command-line arguments
-
-The following arguments are defined in both `train_main.py` files:
-
-- `-width` (default: `3`): number of adjacent seismic traces used for training; must be odd.
-- `-num_train_wells` (default: `12`): number of traces used as labeled training data.
-- `-max_epoch` (default: `1000`): maximum number of training epochs.
-- `-batch_size` (default: `12`): batch size for training.
-- `-alpha` (default: `1`): weight of the property loss term.
-- `-beta` (default: `0.2`): weight of the seismic loss term.
-- `-test_checkpoint` (default: `None`): path to a model checkpoint to test; when used, no training is performed.
-- `-session_name` (default: a timestamp): name used when saving the model.
-
 ## Testing / Evaluation
 
 ### Model evaluation
@@ -112,14 +97,6 @@ or:
 cd SEAM
 python train_main.py -test_checkpoint <checkpoint_name>
 ```
-
-The evaluation code computes the following metrics:
-
-- Correlation coefficient
-- R²
-- MSE
-
-It also generates visualizations comparing the true model, predicted model, initial model, and the error.
 
 Note:
 

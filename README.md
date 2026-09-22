@@ -16,14 +16,7 @@ The project uses a semi-supervised learning framework composed of two main parts
 ## Repository Structure
 
 ```text
-Dual-STNet/
-├── Marmousi2/
-│   ├── train_main.py
-│   ├── core/
-│   │   └── functions.py
-│   ├── model/
-│   │   └── vitCA_and_MutiScale_ModernTCN2D.py
-│   └── data/
+Dual-STNet/ 
 └── SEAM/
     ├── train_main.py
     ├── core/
@@ -33,7 +26,6 @@ Dual-STNet/
     └── data/
 ```
 
-- `Marmousi2/` and `SEAM/` correspond to experiments on two different datasets.
 
 ## Requirements
 
@@ -50,23 +42,12 @@ Dual-STNet/
 The data files are located in:
 
 ```text
-Marmousi2/data/
 SEAM/data/
 ```
 
 The project uses NumPy `.npy` files to store seismic data and elastic property data.
 
 ## Usage
-
-### Marmousi2
-
-```bash
-cd Marmousi2
-python train_main.py
-```
-
-This command trains the model and then runs the evaluation, following the current code flow.
-
 ### SEAM
 
 ```bash
@@ -85,14 +66,6 @@ python train_main.py -test_checkpoint <checkpoint_name>
 ```
 
 This command must be run from the corresponding dataset directory, for example:
-
-```bash
-cd Marmousi2
-python train_main.py -test_checkpoint <checkpoint_name>
-```
-
-or:
-
 ```bash
 cd SEAM
 python train_main.py -test_checkpoint <checkpoint_name>
